@@ -1,0 +1,76 @@
+﻿@page "/students"
+@page "/"
+@using APBD_10.Services
+@using APBD_10.Models
+@using APBD_10.Shared
+
+@inject StudentsApiClient ApiClient
+@inject StateContainer StateContainer
+
+<PageTitle>Lista Studentów</PageTitle>
+
+<h2>Lista Studentów</h2>
+
+<div class="mb-3">
+    <a href="/students/create" class="btn btn-success">Dodaj Nowego Studenta</a>
+</div>
+
+<ErrorBoundary>
+    <ChildContent>
+        <ApiError Message="@errorMessage" />
+
+        <LoadingPanel IsLoading="@isLoading">
+            <DataTable TItem="StudentDto" Items="@students">
+                <TableHeader>
+                    <th>Indeks</th>
+                    <th>Imię i Nazwisko</th>
+                    <th>Email</th>
+                    <th>Semestr</th>
+                    <th>Akcje</th>
+                </TableHeader>
+                <RowTemplate Context="student">
+                    <td>@student.IndexNumber</td>
+                    <td>@student.FirstName @student.LastName</td>
+                    <td>@student.Email</td>
+                    <td>@student.Semester</td>
+                    <td>
+                        <a href="/students/@student.Id" class="btn btn-sm btn-info">Szczegóły</a>
+                        @if (StateContainer.IsObserved(student.Id))
+                        {
+                            <button @onclick="() => StateContainer.RemoveObserved(student.Id)" class="btn btn-sm btn-danger ms-1">Usuń z obs.</button>
+                        }
+                        else
+                        {
+                            <button @onclick="() => StateContainer.AddObserved(student)" class="btn btn-sm btn-outline-primary ms-1">Obserwuj</button>
+                        }
+                    </td>
+                </RowTemplate>
+            </DataTable>
+        </LoadingPanel>
+    </ChildContent>
+    <ErrorContent>
+        <div class="alert alert-warning">Wystąpił krytyczny błąd podczas renderowania listy studentów.</div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private IReadOnlyList<StudentDto> students = Array.Empty<StudentDto>();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            students = await ApiClient.GetStudentsAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Nie udało się pobrać listy studentów: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

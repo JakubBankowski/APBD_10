@@ -1,0 +1,73 @@
+﻿@page "/students/create"
+@using APBD_10.Models
+@using APBD_10.Services
+@using APBD_10.Shared
+@inject StudentsApiClient ApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Dodaj Studenta</PageTitle>
+
+<div class="container mt-4">
+    <h2>Dodaj Nowego Studenta</h2>
+
+    <ApiError Message="@errorMessage" />
+
+=    <EditForm Model="@newStudent" OnValidSubmit="HandleValidSubmit" FormName="CreateStudentForm">
+        <DataAnnotationsValidator />
+        
+        <div class="mb-3">
+            <label class="form-label fw-bold">Numer Indeksu</label>
+            <InputText @bind-Value="newStudent.IndexNumber" class="form-control" placeholder="np. s12345" />
+            <ValidationMessage For="() => newStudent.IndexNumber" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Imię</label>
+            <InputText @bind-Value="newStudent.FirstName" class="form-control" />
+            <ValidationMessage For="() => newStudent.FirstName" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Nazwisko</label>
+            <InputText @bind-Value="newStudent.LastName" class="form-control" />
+            <ValidationMessage For="() => newStudent.LastName" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Adres Email</label>
+            <InputText @bind-Value="newStudent.Email" class="form-control" placeholder="np. student@pja.edu.pl" />
+            <ValidationMessage For="() => newStudent.Email" class="text-danger" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Semestr</label>
+            <InputNumber @bind-Value="newStudent.Semester" class="form-control" min="1" max="8" />
+            <ValidationMessage For="() => newStudent.Semester" class="text-danger" />
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary px-4">Zapisz studenta</button>
+            <a href="/students" class="btn btn-outline-secondary ms-2">Anuluj</a>
+        </div>
+    </EditForm>
+</div>
+
+@code {
+    private StudentDto newStudent = new();
+    private string? errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            errorMessage = null;
+            var createdStudent = await ApiClient.CreateStudentAsync(newStudent);
+            
+            Navigation.NavigateTo($"/students/{createdStudent.Id}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

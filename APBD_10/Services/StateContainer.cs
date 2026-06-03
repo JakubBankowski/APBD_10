@@ -6,7 +6,7 @@ public class StateContainer
 {
     private readonly List<StudentDto> _students = new();
 
-    private IReadOnlyList<StudentDto> ObservedStudents => _students.AsReadOnly();
+    public IReadOnlyList<StudentDto> ObservedStudents => _students.AsReadOnly();
 
     public event Action? OnChange;
 

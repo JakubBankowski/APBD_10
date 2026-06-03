@@ -1,0 +1,27 @@
+﻿@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<button class="btn btn-sm btn-outline-secondary" @onclick="CopyEmail">
+    Kopiuj Email
+</button>
+
+@code {
+    private IJSObjectReference? module;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/appJsInterop.js");
+    }
+
+    private async Task CopyEmail()
+    {
+        if (module != null)
+            await module.InvokeVoidAsync("copyToClipboard", "student@example.com");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null) await module.DisposeAsync();
+    }
+}
